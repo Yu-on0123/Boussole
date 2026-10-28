@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boussole — orientation post-bac</title>
+  <meta name="description" content="Système expert d'orientation post-bac : une base de règles Prolog, une API Python et une démonstration qui explique chaque recommandation.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="preload" href="fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/newsreader-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <script>
+    /* Thème appliqué avant le premier rendu (évite le flash). */
+    try {
+      var t = localStorage.getItem("boussole-theme");
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    } catch (e) { /* stockage indisponible : on suit le thème du système */ }
+  </script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="evitement" href="#contenu">Aller au contenu</a>
+
+  <header class="entete">
+    <div class="entete-in">
+      <a class="marque" href="/" aria-label="Boussole, accueil">
+        <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+          <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="1.75"/>
+          <g class="aiguille-groupe"><path d="M16 5 L19.5 16 L16 27 L12.5 16 Z" class="aiguille"/></g>
+          <circle cx="16" cy="16" r="1.8" fill="currentColor"/>
+        </svg>
+        <span>Boussole</span>
+      </a>
+      <nav class="navigation" aria-label="Navigation principale">
+        <button type="button" data-vue="orientation" aria-current="page">Orientation</button>
+        <button type="button" data-vue="regles">Règles Prolog</button>
+        <button type="button" data-vue="principe">Comment ça marche</button>
+      </nav>
+      <button type="button" class="theme" id="theme" aria-label="Passer en thème sombre" aria-pressed="false">
+        <svg class="i-lune" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <svg class="i-soleil" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="contenu">
+    <!-- ================= Orientation ================= -->
+    <section id="vue-orientation" class="vue">
+
+      <div id="intro" class="intro">
+        <svg class="rose" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+          <circle class="rose-anneau" cx="200" cy="200" r="190"/>
+          <circle class="rose-graduation" cx="200" cy="200" r="176"/>
+          <circle class="rose-anneau fin" cx="200" cy="200" r="132"/>
+          <path class="rose-croix" d="M200 8V392M8 200H392"/>
+          <g class="rose-aiguille"><path d="M200 70 L214 200 L200 330 L186 200 Z"/><path class="pointe" d="M200 70 L214 200 L186 200 Z"/></g>
+          <circle cx="200" cy="200" r="5" class="rose-centre"/>
+        </svg>
+        <div class="intro-texte">
+          <p class="surtitre">Système expert · Prolog</p>
+          <h1>Quelle filière <em>te ressemble</em>&nbsp;?</h1>
+          <p class="chapeau">
+            Réponds à une dizaine de questions sur ton bac, tes matières et tes envies.
+            Boussole te propose des filières post-bac au Bénin, et surtout
+            <strong>te montre le raisonnement</strong> derrière chaque proposition.
+          </p>
+          <button type="button" class="bouton" id="commencer">Commencer le questionnaire</button>
+          <p class="note">Environ trois minutes. Rien n'est enregistré.</p>
+        </div>
+        <figure class="intro-exemple">
+          <figcaption>Voilà à quoi ressemble une explication</figcaption>
+          <div id="exemple-arbre"></div>
+          <p class="note">Chaque ligne est une étape de démonstration du moteur Prolog : une règle, un fait que tu as donné, ou un test.</p>
+        </figure>
+      </div>
+
+      <div id="questionnaire" hidden></div>
+      <div id="resultats" hidden></div>
+    </section>
+
+    <!-- ================= Règles Prolog ================= -->
+    <section id="vue-regles" class="vue" hidden>
+      <h1>La base de règles</h1>
+      <p class="chapeau">
+        Toute l'intelligence du système tient dans ces fichiers Prolog. L'API Python ne fait
+        que transmettre tes réponses et renvoyer le résultat.
+      </p>
+      <div id="regles-onglets" class="onglets" role="tablist" aria-label="Fichiers Prolog"></div>
+      <p id="regles-description" class="note"></p>
+      <pre id="regles-code" class="code" tabindex="0"></pre>
+    </section>
+
+    <!-- ================= Principe ================= -->
+    <section id="vue-principe" class="vue" hidden>
+      <h1>Comment ça marche</h1>
+      <p class="chapeau">Trois couches, chacune avec un seul rôle.</p>
+
+      <svg class="schema" viewBox="0 0 760 150" role="img"
+           aria-label="Le navigateur appelle l'API Python, qui interroge le moteur Prolog">
+        <g class="boite"><rect x="4" y="30" width="200" height="90" rx="8"/>
+          <text x="104" y="66" text-anchor="middle" class="titre">Navigateur</text>
+          <text x="104" y="90" text-anchor="middle">questionnaire, résultats,</text>
+          <text x="104" y="107" text-anchor="middle">arbre « pourquoi »</text></g>
+        <g class="boite"><rect x="280" y="30" width="200" height="90" rx="8"/>
+          <text x="380" y="66" text-anchor="middle" class="titre">API Python</text>
+          <text x="380" y="90" text-anchor="middle">FastAPI, validation,</text>
+          <text x="380" y="107" text-anchor="middle">pont vers Prolog</text></g>
+        <g class="boite fort"><rect x="556" y="30" width="200" height="90" rx="8"/>
+          <text x="656" y="66" text-anchor="middle" class="titre">SWI-Prolog</text>
+          <text x="656" y="90" text-anchor="middle">règles, inférence,</text>
+          <text x="656" y="107" text-anchor="middle">méta-interpréteur</text></g>
+        <g class="fleche">
+          <path d="M206 62 H278 M274 57 L280 62 L274 67"/>
+          <path d="M278 98 H206 M210 93 L204 98 L210 103"/>
+          <path d="M482 62 H554 M550 57 L556 62 L550 67"/>
+          <path d="M554 98 H482 M486 93 L480 98 L486 103"/>
+        </g>
+        <text x="242" y="52" text-anchor="middle" class="legende">réponses</text>
+        <text x="242" y="120" text-anchor="middle" class="legende">résultats</text>
+        <text x="518" y="52" text-anchor="middle" class="legende">JSON</text>
+        <text x="518" y="120" text-anchor="middle" class="legende">JSON</text>
+      </svg>
+
+      <div class="colonnes">
+        <div>
+          <h2>Des règles, pas des statistiques</h2>
+          <p>
+            Le moteur n'a pas appris à partir de données. Chaque conclusion vient de règles écrites à la main,
+            comme <code>aptitude_calcul</code> : « bon en maths, ou niveau moyen avec un bac C ou E ».
+            Les règles s'appuient les unes sur les autres : un critère de filière utilise une aptitude,
+            qui utilise une note, qui utilise ta réponse.
+          </p>
+          <h2>Un score qui se justifie</h2>
+          <p>
+            Chaque filière a des <em>exigences</em> éliminatoires (série du bac, études longues pour la médecine)
+            et des <em>critères</em> pondérés sur 100 points. Un fort intérêt rapporte plus qu'un intérêt moyen.
+            Si une exigence manque, la filière est écartée et la raison t'est donnée.
+          </p>
+        </div>
+        <div>
+          <h2>Le méta-interpréteur</h2>
+          <p>
+            Pour expliquer ses réponses, le moteur démontre chaque but avec un petit interpréteur écrit en Prolog
+            qui garde la trace des règles utilisées. C'est ce qui produit l'arbre affiché sous « Pourquoi cette réponse ? ».
+          </p>
+<pre class="code petit" tabindex="0">prouve(But, noeud(test, But, [])) :-
+    test_direct(But), !, call(But).
+prouve(But, Arbre) :-
+    clause(But, Corps),
+    (   Corps == true
+    ->  Arbre = noeud(fait, But, [])
+    ;   prouve_corps(Corps, Enfants),
+        Arbre = noeud(regle, But, Enfants)
+    ).</pre>
+        </div>
+      </div>
+
+      <h2>À garder en tête</h2>
+      <p class="limites">
+        Les séries admises, les coûts et les durées sont des données <strong>indicatives et simplifiées</strong>,
+        écrites pour illustrer le raisonnement. Le score mesure l'adéquation d'un profil à une filière,
+        pas les chances d'être admis : les concours et les quotas décident. Vérifie toujours les conditions
+        officielles auprès des établissements.
+      </p>
+    </section>
+  </main>
+
+  <footer class="pied">
+    <p>Boussole — projet de portfolio : système expert en Prolog, API Python, interface web.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

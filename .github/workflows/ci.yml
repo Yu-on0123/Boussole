@@ -1,0 +1,22 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Installer SWI-Prolog
+        run: sudo apt-get update && sudo apt-get install -y swi-prolog-nox
+      - name: Tests Prolog
+        run: swipl -q -g run_tests -t halt prolog/tests.pl
+      - name: Tests de l'API
+        run: |
+          pip install -r requirements-dev.txt
+          pytest -q
