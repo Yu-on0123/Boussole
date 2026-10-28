@@ -8,7 +8,7 @@
 
 Un système expert d'aide à l'orientation des bacheliers au Bénin. L'intelligence est une **base de règles Prolog** ; une petite **API Python (FastAPI)** la fait dialoguer avec une **interface web**. Chaque recommandation vient avec sa démonstration : « Pourquoi cette réponse ? ».
 
-<!-- Démo en ligne : ajouter ici le lien une fois le projet déployé -->
+**[Voir la démo en ligne](https://boussole-b1v5.onrender.com/)** — sur le plan gratuit, la première visite après une période d'inactivité peut prendre une trentaine de secondes.
 
 | Questionnaire dynamique | Résultats et cadran |
 |---|---|
