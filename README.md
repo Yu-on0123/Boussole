@@ -50,7 +50,6 @@ systeme-expert-orientation/
 │   ├── moteur.py          pont Python ↔ Prolog
 │   └── test_api.py        tests pytest
 ├── web/                   index.html, style.css, app.js, fonts/
-├── design/                notes de conception de l'interface (audit, tokens, écrans)
 ├── docs/                  captures d'écran du README
 ├── .github/workflows/     intégration continue
 ├── Dockerfile
